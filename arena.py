@@ -64,11 +64,21 @@ class Arena:
                 x=item.current_pos_x, y=item.current_pos_y, items=[item]
             )
 
-    def _move_knight(self, knight: Knight, direction: str) -> Knight:
+    def _move_knight(self, knight: Knight, direction: str):
         # Set the position where the knight came from to None
         self.board[knight.current_pos_x][knight.current_pos_y].knight = None
+        last_pos_x = knight.current_pos_x
+        last_pos_y = knight.current_pos_y
 
-        knight.move(direction)
+        try:
+            knight.move(direction)
+        except KnightDrowned:
+            if knight.item:
+                self.board[last_pos_x][last_pos_y].items.append(knight.item)
+
+            self.knights[knight.representation].item = None
+
+            return
 
         print('Moving knight', knight)
         print('Entity in position to move', self.board[knight.current_pos_x][knight.current_pos_y])
@@ -80,6 +90,7 @@ class Arena:
 
             # Remove the item from the position where the item was retrieved.
             self.board[knight.current_pos_x][knight.current_pos_y].remove_item(knight.item)
+            self.items[knight.item.representation].equipped = True
         elif len(current_entity_in_position_to.items) > 1 and knight.item is None:
             best_items = {}
 
@@ -99,6 +110,7 @@ class Arena:
 
             # Set the position where the item came from to None
             self.board[knight.current_pos_x][knight.current_pos_y].remove_item(knight.item)
+            self.items[knight.item.representation].equipped = True
 
         # TODO: Knights that
         #  drown throw their item to the bank before sinking down to Davy Jones' Locker - the item is left on
@@ -123,13 +135,8 @@ class Arena:
             x=knight.current_pos_x, y=knight.current_pos_y, knight=knight
         )
 
-        return knight
-
     def move(self, knight: str, direction: str):
-        try:
-            self._move_knight(self.knights[knight], direction)
-        except KnightDrowned:
-            pass
+        self._move_knight(self.knights[knight], direction)
 
     def __str__(self):
         arena = ' _ _ _ _ _ _ _ _\n'

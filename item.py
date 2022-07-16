@@ -8,6 +8,7 @@ class Item:
     defense: int
     current_pos_x: int
     current_pos_y: int
+    equipped: bool = False
 
     def __post_init__(self):
         self.representation = self.name[0]

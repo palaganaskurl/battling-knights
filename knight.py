@@ -28,7 +28,7 @@ class Knight:
 
     @property
     def total_attack(self):
-        if self.status == KnightStatus.DEAD:
+        if self.status != KnightStatus.LIVE:
             return 0
 
         if self.item:
@@ -38,7 +38,7 @@ class Knight:
 
     @property
     def total_defense(self):
-        if self.status == KnightStatus.DEAD:
+        if self.status != KnightStatus.LIVE:
             return 0
 
         if self.item:
@@ -50,29 +50,38 @@ class Knight:
         self.representation = self.color[0]
 
     def move(self, direction):
-        # TODO: n to Davy Jones' Locker - the item is left on
-        #  the last valid tile that the knight was on.
-
         if direction == Directions.NORTH.value:
             self.current_pos_x -= 1
 
             if self.current_pos_x < 0:
                 self.drown_knight()
+
+            if self.item:
+                self.item.current_pos_x -= 1
         elif direction == Directions.SOUTH.value:
             self.current_pos_x += 1
 
             if self.current_pos_x > 7:
                 self.drown_knight()
+
+            if self.item:
+                self.item.current_pos_x += 1
         elif direction == Directions.WEST.value:
             self.current_pos_y -= 1
 
             if self.current_pos_x < 0:
                 self.drown_knight()
+
+            if self.item:
+                self.item.current_pos_y -= 1
         elif direction == Directions.EAST.value:
             self.current_pos_y += 1
 
             if self.current_pos_x > 7:
                 self.drown_knight()
+
+            if self.item:
+                self.item.current_pos_y += 1
 
     def drown_knight(self):
         self.current_pos_x = None

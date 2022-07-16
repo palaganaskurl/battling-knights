@@ -16,8 +16,8 @@ class Game:
         initial_items = [
             Item(name='Axe', attack=2, defense=0, current_pos_x=2, current_pos_y=2),
             Item(name='Dagger', attack=1, defense=0, current_pos_x=2, current_pos_y=5),
-            Item(name='Helmet', attack=0, defense=1, current_pos_x=5, current_pos_y=2),
-            Item(name='MagicStaff', attack=1, defense=1, current_pos_x=5, current_pos_y=5),
+            Item(name='Helmet', attack=0, defense=1, current_pos_x=5, current_pos_y=5),
+            Item(name='MagicStaff', attack=1, defense=1, current_pos_x=5, current_pos_y=2),
         ]
         self.arena = Arena(initial_knights, initial_items)
 
@@ -41,14 +41,18 @@ class Game:
         json_data = {}
 
         for knight in self.arena.knights.values():
-            print('knight', knight)
-
             json_data[knight.color] = [
                 [knight.current_pos_x, knight.current_pos_y],
                 knight.status,
                 knight.item.name if knight.item else None,
                 knight.total_attack,
                 knight.total_defense
+            ]
+
+        for item in self.arena.items.values():
+            json_data[item.name] = [
+                [item.current_pos_x, item.current_pos_y],
+                item.equipped
             ]
 
         with open('final_state.json', 'w') as f:
