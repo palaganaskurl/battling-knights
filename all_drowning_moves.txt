@@ -1,0 +1,6 @@
+GAME-START
+R:W
+B:S
+G:E
+Y:N
+GAME-END
