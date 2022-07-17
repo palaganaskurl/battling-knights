@@ -20,6 +20,9 @@ Please use Python 3.7+
 ### Knight
 * Contains class that defines the knight properties.
 
+## Issues
+* Items are rendered left align because I'm having a hard time rendering multiple items center align in a grid cell.
+
 ## Contributions
 1. Install dev dependencies from Pipfile.
 2. Run pre-commit install
