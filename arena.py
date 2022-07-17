@@ -1,10 +1,13 @@
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Optional, Union, List
+from copy import deepcopy
+from dataclasses import dataclass
+from dataclasses import field
+from typing import List
+from typing import Optional
 
-from directions import Directions
 from item import Item
-from knight import Knight, KnightDrowned, KnightStatus
+from knight import Knight
+from knight import KnightDrowned
+from knight import KnightStatus
 
 
 @dataclass
@@ -30,12 +33,8 @@ class Arena:
     def __init__(self, knights: list[Knight], items: list[Item]):
         self.row = 8
         self.col = 8
-        self.knights = {
-            knight.representation: knight for knight in knights
-        }
-        self.items = {
-            item.representation: item for item in items
-        }
+        self.knights = {knight.representation: knight for knight in knights}
+        self.items = {item.representation: item for item in items}
         self.board = self._generate_board()
 
         self._set_knights_initial_state()
@@ -54,15 +53,28 @@ class Arena:
 
     def _set_knights_initial_state(self):
         for knight in self.knights.values():
-            self.board[knight.current_pos_x][knight.current_pos_y] = ArenaPosition(
+            self.board[knight.current_pos_x][
+                knight.current_pos_y
+            ] = ArenaPosition(
                 x=knight.current_pos_x, y=knight.current_pos_y, knight=knight
             )
 
     def _set_items_initial_state(self):
         for item in self.items.values():
-            self.board[item.current_pos_x][item.current_pos_y] = ArenaPosition(
-                x=item.current_pos_x, y=item.current_pos_y, items=[item]
-            )
+            current_arena_position = self.board[item.current_pos_x][
+                item.current_pos_y
+            ]
+
+            if isinstance(current_arena_position, ArenaPosition):
+                self.board[item.current_pos_x][
+                    item.current_pos_y
+                ].items.append(item)
+            else:
+                self.board[item.current_pos_x][
+                    item.current_pos_y
+                ] = ArenaPosition(
+                    x=item.current_pos_x, y=item.current_pos_y, items=[item]
+                )
 
     def _move_knight(self, knight: Knight, direction: str):
         # Set the position where the knight came from to None
@@ -80,27 +92,32 @@ class Arena:
 
             return
 
-        print('Moving knight', knight)
-        print('Entity in position to move', self.board[knight.current_pos_x][knight.current_pos_y])
+        try:
+            current_entity_in_position_to = self.board[knight.current_pos_x][
+                knight.current_pos_y
+            ]
+        except IndexError:
+            return
 
-        current_entity_in_position_to = self.board[knight.current_pos_x][knight.current_pos_y]
-
-        if len(current_entity_in_position_to.items) == 1 and knight.item is None:
+        if (
+            len(current_entity_in_position_to.items) == 1
+            and knight.item is None
+        ):
             knight.item = current_entity_in_position_to.items[0]
 
             # Remove the item from the position where the item was retrieved.
-            self.board[knight.current_pos_x][knight.current_pos_y].remove_item(knight.item)
+            self.board[knight.current_pos_x][knight.current_pos_y].remove_item(
+                knight.item
+            )
             self.items[knight.item.representation].equipped = True
-        elif len(current_entity_in_position_to.items) > 1 and knight.item is None:
+        elif (
+            len(current_entity_in_position_to.items) > 1
+            and knight.item is None
+        ):
             best_items = {}
 
             for item in current_entity_in_position_to.items:
-                item_score_mapping = {
-                    'A': 4,
-                    'M': 3,
-                    'D': 2,
-                    'H': 1
-                }
+                item_score_mapping = {'A': 4, 'M': 3, 'D': 2, 'H': 1}
                 best_items[item_score_mapping[item.representation]] = item
 
             best_item_key = max(best_items.keys())
@@ -109,23 +126,28 @@ class Arena:
             knight.item = best_item
 
             # Set the position where the item came from to None
-            self.board[knight.current_pos_x][knight.current_pos_y].remove_item(knight.item)
+            self.board[knight.current_pos_x][knight.current_pos_y].remove_item(
+                knight.item
+            )
             self.items[knight.item.representation].equipped = True
 
-        # TODO: Knights that
-        #  drown throw their item to the bank before sinking down to Davy Jones' Locker - the item is left on
-        #  the last valid tile that the knight was on.
-
-        if isinstance(current_entity_in_position_to.knight, Knight) \
-                and current_entity_in_position_to.knight.status == KnightStatus.LIVE:
+        if (
+            isinstance(current_entity_in_position_to.knight, Knight)
+            and current_entity_in_position_to.knight.status
+            == KnightStatus.LIVE
+        ):
             win = knight.fight(current_entity_in_position_to.knight)
 
-            losing_knight = self.board[knight.current_pos_x][knight.current_pos_y].knight if win else knight
-            print('Attacker', knight)
-            print('Defender', current_entity_in_position_to.knight)
+            losing_knight = (
+                self.board[knight.current_pos_x][knight.current_pos_y].knight
+                if win
+                else knight
+            )
 
             if losing_knight.item:
-                self.board[knight.current_pos_x][knight.current_pos_y].items.append(losing_knight.item)
+                self.board[knight.current_pos_x][
+                    knight.current_pos_y
+                ].items.append(losing_knight.item)
 
             losing_knight.status = KnightStatus.DEAD
             losing_knight.item = None
@@ -139,22 +161,103 @@ class Arena:
         self._move_knight(self.knights[knight], direction)
 
     def __str__(self):
-        arena = ' _ _ _ _ _ _ _ _\n'
+        arena = '      '
+        rendered_knights = {}
+        knights_copy = deepcopy(self.knights)
 
-        for arena_position_row in self.board:
-            for position in arena_position_row:
+        for i, arena_position_row in enumerate(self.board):
+            if i == 0:
+                for col in range(self.col):
+                    has_drown = False
+
+                    for knight in list(knights_copy.values()):
+                        if (
+                            knight.current_pos_y == col
+                            and knight.current_pos_x == -1
+                            and knight.status == KnightStatus.DROWNED
+                            and not rendered_knights.get(knight.representation)
+                        ):
+                            arena += f'  ({knight.representation.lower()}) '
+                            has_drown = True
+                            rendered_knights[knight.representation] = True
+                            del knights_copy[knight.representation]
+
+                    if not has_drown:
+                        arena += '      '
+
+                arena += (
+                    '\n      --------------------------'
+                    '-----------------------\n'
+                )
+
+            for j, position in enumerate(arena_position_row):
+                has_drown = False
+
+                for knight in list(knights_copy.values()):
+                    if (
+                        knight.current_pos_x == i
+                        and knight.current_pos_y == -1
+                        and knight.status == KnightStatus.DROWNED
+                        and not rendered_knights.get(knight.representation)
+                    ):
+                        arena += f'  ({knight.representation.lower()}) '
+                        has_drown = True
+                        rendered_knights[knight.representation] = True
+                        del knights_copy[knight.representation]
+
+                if not has_drown and j == 0:
+                    arena += '      '
+
                 if position.items:
                     representations = ''
 
                     for item in position.items:
-                        representations += item.representation
+                        representations += f'{item.representation}'
 
-                    arena += f'|{representations}'
+                    space_mapping = {4: 1, 3: 2, 2: 3, 1: 4}
+                    spaces = ''.join(
+                        [' '] * space_mapping[len(position.items)]
+                    )
+                    arena += f'|{representations}{spaces}'
                 elif position.knight:
-                    arena += f'|{position.knight.representation}'
+                    arena += f'|  {position.knight.representation}  '
                 else:
-                    arena += '|_'
+                    arena += '|     '
 
-            arena += '|\n'
+            arena += '|'
+
+            for knight in list(knights_copy.values()):
+                if (
+                    knight.current_pos_x == i
+                    and knight.current_pos_y == 8
+                    and knight.status == KnightStatus.DROWNED
+                    and not rendered_knights.get(knight.representation)
+                ):
+                    arena += f'  ({knight.representation.lower()}) '
+                    rendered_knights[knight.representation] = True
+                    del knights_copy[knight.representation]
+
+            arena += (
+                '\n      -------------------------------------------------\n'
+            )
+
+            if i == self.col - 1:
+                arena += '      '
+
+                for col in range(self.col):
+                    has_dead = False
+
+                    for knight in list(knights_copy.values()):
+                        if (
+                            knight.current_pos_y == col
+                            and knight.current_pos_x == 8
+                            and knight.status == KnightStatus.DROWNED
+                            and not rendered_knights.get(knight.representation)
+                        ):
+                            arena += f'  ({knight.representation.lower()}) '
+                            has_dead = True
+
+                    if not has_dead:
+                        arena += '      '
 
         return arena
