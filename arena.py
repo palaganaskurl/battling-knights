@@ -153,9 +153,7 @@ class Arena:
             losing_knight.item = None
             self.knights[losing_knight.representation] = losing_knight
 
-        self.board[knight.current_pos_x][knight.current_pos_y] = ArenaPosition(
-            x=knight.current_pos_x, y=knight.current_pos_y, knight=knight
-        )
+        self.board[knight.current_pos_x][knight.current_pos_y].knight = knight
 
     def move(self, knight: str, direction: str):
         self._move_knight(self.knights[knight], direction)
