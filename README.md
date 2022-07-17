@@ -29,4 +29,4 @@ Please use Python 3.7+
 3. (Optional) Run pre-commit run --all-files upon pre-commit install
 
 ## Sample Run
-![carbon](https://user-images.githubusercontent.com/18252435/179399876-83900bf0-7c49-4279-a668-a83bcb7c62f6.png)
+![sample-run](https://user-images.githubusercontent.com/18252435/179400696-0f23bc6e-e197-45c1-ae3c-6b74571190e2.png)
