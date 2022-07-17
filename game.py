@@ -78,7 +78,7 @@ class Game:
         self.arena = Arena(initial_knights, initial_items)
 
     def run(self):
-        with open('all_drowning_moves.txt', 'r') as f:
+        with open('moves.txt', 'r') as f:
             moves = f.read().splitlines()
             moves = moves[1:-1]
 
