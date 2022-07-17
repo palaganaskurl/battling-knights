@@ -19,9 +19,8 @@ Please use Python 3.7+
 * Contains class that defines the item properties.
 ### Knight
 * Contains class that defines the knight properties.
-* Contains method to fight another knight.
 
 ## Contributions
-1.) Install dev dependencies from Pipfile.
-2.) Run pre-commit install
-3.) (Optional) Run pre-commit run --all-files upon pre-commit install
+1. Install dev dependencies from Pipfile.
+2. Run pre-commit install
+3. (Optional) Run pre-commit run --all-files upon pre-commit install
