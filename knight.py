@@ -1,6 +1,7 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Union, Optional
+from typing import Optional
+from typing import Union
 
 from directions import Directions
 from item import Item
@@ -69,7 +70,7 @@ class Knight:
         elif direction == Directions.WEST.value:
             self.current_pos_y -= 1
 
-            if self.current_pos_x < 0:
+            if self.current_pos_y < 0:
                 self.drown_knight()
 
             if self.item:
@@ -77,15 +78,13 @@ class Knight:
         elif direction == Directions.EAST.value:
             self.current_pos_y += 1
 
-            if self.current_pos_x > 7:
+            if self.current_pos_y > 7:
                 self.drown_knight()
 
             if self.item:
                 self.item.current_pos_y += 1
 
     def drown_knight(self):
-        self.current_pos_x = None
-        self.current_pos_y = None
         self.status = KnightStatus.DROWNED
 
         raise KnightDrowned()
