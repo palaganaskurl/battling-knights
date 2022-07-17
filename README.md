@@ -24,3 +24,6 @@ Please use Python 3.7+
 1. Install dev dependencies from Pipfile.
 2. Run pre-commit install
 3. (Optional) Run pre-commit run --all-files upon pre-commit install
+
+## Sample Run
+![carbon](https://user-images.githubusercontent.com/18252435/179399876-83900bf0-7c49-4279-a668-a83bcb7c62f6.png)
